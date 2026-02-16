@@ -1,0 +1,30 @@
+# Obsidian AV Transcriber Configuration Example
+
+# 1. Vault and Paths
+# Path to the root of your Obsidian vault
+vault_root = "."
+# Directory containing your audio recordings (relative to vault_root)
+audio_dir = "Recordings"
+# Directory where transcriptions should be saved (relative to vault_root)
+transcription_dir = "Recordings"
+
+# 2. Move Behavior
+# Whether to move the original audio file to the transcription directory (true)
+# or keep it in its original location (false)
+move_audio = false
+
+# 3. Transcribe, AI, and Errors
+# AI Provider to use for transcription (currently only 'mistral' is supported natively)
+ai_provider = "mistral"
+# Model identifier for the chosen provider
+ai_model = "voxtral-mini-latest"
+# API Key can be provided here, but environment variables are recommended for security
+# api_key = "your-api-key-here"
+# Template for naming transcription files. {original_name} is replaced with the audio filename stem.
+transcription_template = "{original_name}-transcribe"
+# Filename for logging errors within the vault
+error_log_file = "Transcription Errors.md"
+
+# 4. Link Migration
+# Whether to scan the vault and update ![[audio.m4a]] links to point to transcriptions
+migrate_links = true
