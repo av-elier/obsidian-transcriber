@@ -1,0 +1,25 @@
+name: Transcribe Recordings
+
+on:
+  push:
+    paths: ['**.m4a']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  transcribe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Transcription
+        uses: av-elier/obsidian-transcriber@main
+        with:
+          api-key: ${{ secrets.MISTRAL_API_KEY }}
+          # Optional overrides:
+          # vault-root: '.'
+          # audio-dir: 'Recordings'
+          # move-audio: 'false'

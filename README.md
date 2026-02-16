@@ -21,7 +21,46 @@ uvx --from git+https://github.com/youruser/obsidian-av.git python -m transcriber
 uv run python -m transcriber.main --vault-root /path/to/vault
 ```
 
+
+## GitHub Actions
+
+You can use this tool to automatically transcribe recordings in your Obsidian vault using GitHub Actions.
+
+1. Create a file `.github/workflows/transcribe.yml` in your vault repository.
+2. Copy the content from [this example](.github/example-workflows/transcribe.yml).
+3. Add your `MISTRAL_API_KEY` as a repository secret.
+
+### Usage
+
+```yaml
+jobs:
+  transcribe:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: av-elier/obsidian-transcriber@main
+        with:
+          api-key: ${{ secrets.MISTRAL_API_KEY }}
+```
+
+### Action Configuration
+
+| Input | Description | Default |
+|---|---|---|
+| `api-key` | **Required**. Mistral API Key | |
+| `vault-root` | Path to vault root relative to repo | `.` |
+| `audio-dir` | Directory containing recordings | `Recordings` |
+| `transcription-dir` | Output directory | `Recordings` |
+| `ai-provider` | AI Provider | `mistral` |
+| `ai-model` | AI Model | `voxtral-mini-latest` |
+| `move-audio` | Move audio files instead of copying | `false` |
+| `auto-merge` | Automatically merge the PR | `true` |
+
 ## Configuration
+
 
 Settings can come from three sources. Environment variables override TOML, and CLI flags override both.
 

@@ -1,0 +1,136 @@
+name: 'Obsidian Transcriber'
+description: 'Transcribe audio recordings in your Obsidian vault using AI'
+author: 'av-elier'
+inputs:
+  api-key:
+    description: 'API Key for the AI provider (e.g. MISTRAL_API_KEY)'
+    required: true
+  vault-root:
+    description: 'Path to the root of your Obsidian vault'
+    default: '.'
+    required: false
+  audio-dir:
+    description: 'Directory containing audio files'
+    default: 'Recordings'
+    required: false
+  transcription-dir:
+    description: 'Directory for transcriptions'
+    default: 'Recordings'
+    required: false
+  ai-provider:
+    description: 'AI Provider (default: mistral)'
+    default: 'mistral'
+    required: false
+  ai-model:
+    description: 'AI Model to use'
+    default: 'voxtral-mini-latest'
+    required: false
+  move-audio:
+    description: 'Move audio files instead of copying'
+    default: 'false'
+    required: false
+  auto-merge:
+    description: 'Whether to auto-merge the PR after creation'
+    default: 'true'
+    required: false
+
+outputs:
+  has-changes:
+    description: 'Whether changes were detected and processed'
+    value: ${{ steps.git-check.outputs.changes }}
+  pr-url:
+    description: 'URL of the created Pull Request'
+    value: ${{ steps.pr-create.outputs.pr_url }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout Transcriber Tool
+      uses: actions/checkout@v4
+      with:
+        repository: av-elier/obsidian-transcriber
+        path: .obsidian-transcriber-tool
+        ref: main
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+        cache-dependency-glob: ".obsidian-transcriber-tool/uv.lock"
+
+    - name: Set up Python
+      run: uv python install 3.12
+      shell: bash
+
+    - name: Install dependencies
+      run: uv sync
+      working-directory: .obsidian-transcriber-tool
+      shell: bash
+
+    - name: Run Transcription Pipeline
+      run: |
+        uv run python -m transcriber.main \
+          --vault-root "${{ inputs.vault-root }}" \
+          --audio-dir "${{ inputs.audio-dir }}" \
+          --transcription-dir "${{ inputs.transcription-dir }}" \
+          --ai-provider "${{ inputs.ai-provider }}" \
+          --ai-model "${{ inputs.ai-model }}" \
+          ${{ inputs.move-audio == 'true' && '--move-audio' || '' }}
+      working-directory: .obsidian-transcriber-tool
+      shell: bash
+      env:
+        MISTRAL_API_KEY: ${{ inputs.api-key }} # Or generic variable name in future
+
+    - name: Check for changes
+      id: git-check
+      shell: bash
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "changes=true" >> $GITHUB_OUTPUT
+        else
+          echo "changes=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create branch
+      if: steps.git-check.outputs.changes == 'true'
+      shell: bash
+      run: |
+        BRANCH_NAME="automation/transcribe-$(date +%Y%m%d%H%M%S)"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git checkout -b "$BRANCH_NAME"
+        echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+        # Commit changes
+        git add .
+        git commit -m "chore(automation): Add new transcriptions"
+        git push origin "$BRANCH_NAME"
+      id: branch-create
+
+    - name: Create Pull Request
+      if: steps.git-check.outputs.changes == 'true'
+      shell: bash
+      run: |
+        pr_url=$(gh pr create \
+          --title "chore(automation): Add new transcriptions" \
+          --body "Automated transcription of new recordings." \
+          --head "${{ steps.branch-create.outputs.branch }}" \
+          --base main)
+        echo "pr_url=$pr_url" >> $GITHUB_OUTPUT
+      id: pr-create
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Enable auto-merge
+      if: steps.git-check.outputs.changes == 'true' && inputs.auto-merge == 'true'
+      shell: bash
+      run: |
+        gh pr merge --auto --squash --delete-branch "${{ steps.branch-create.outputs.branch }}" || \
+        gh pr merge --squash --delete-branch "${{ steps.branch-create.outputs.branch }}"
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Cleanup Tool Directory
+      if: always()
+      shell: bash
+      run: rm -rf .obsidian-transcriber-tool
