@@ -52,6 +52,15 @@ runs:
         path: .obsidian-transcriber-tool
         ref: main
 
+    - name: Prevent tool commit & Fetch Vault History
+      shell: bash
+      run: |
+        # Ignore the tool directory so it's not committed
+        echo ".obsidian-transcriber-tool" >> .git/info/exclude
+
+        # Fetch main branch to ensure history exists for PR creation
+        git fetch origin main --depth=1 || echo "Could not fetch main, continuing..."
+
     - name: Install uv
       uses: astral-sh/setup-uv@v5
       with:
