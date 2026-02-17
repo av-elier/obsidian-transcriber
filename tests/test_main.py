@@ -21,7 +21,7 @@ def test_run_pipeline_orchestration(mock_organizer, mock_factory, mock_linker, t
     run_pipeline(config)
 
     mock_organizer.return_value.organize.assert_called_once()
-    mock_factory.get_provider.assert_called_once_with("mistral", "test_key")
+    mock_factory.get_provider.assert_called_once_with("mistral", "test_key", timeout=300.0)
     mock_trans.transcribe.assert_called_once()
     mock_linker.return_value.migrate_all.assert_called_once()
 

@@ -5,8 +5,9 @@ from pathlib import Path
 class TranscriptionProvider(ABC):
     """Abstract base class for transcription providers."""
 
-    def __init__(self, api_key: str, **kwargs):
+    def __init__(self, api_key: str, timeout: float = 300.0, **kwargs):
         self.api_key = api_key
+        self.timeout = timeout
 
     @abstractmethod
     def transcribe(self, audio_path: Path, model: str) -> str:
@@ -23,7 +24,7 @@ class MistralProvider(TranscriptionProvider):
             files = {"file": (audio_path.name, audio_file, "audio/mpeg")}
             headers = {"x-api-key": self.api_key}
 
-            with httpx.Client() as client:
+            with httpx.Client(timeout=self.timeout) as client:
                 response = client.post(
                     self.API_URL,
                     headers=headers,

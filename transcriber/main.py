@@ -67,7 +67,7 @@ def run_pipeline(config: Config):
 
     print("Transcribing recordings...")
     try:
-        transcriber = factory.get_provider(config.ai_provider, config.api_key)
+        transcriber = factory.get_provider(config.ai_provider, config.api_key, timeout=config.timeout)
     except ValueError as e:
         error_msg = str(e)
         print(f"Error: {error_msg}")

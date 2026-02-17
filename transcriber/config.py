@@ -12,6 +12,7 @@ class Config:
     ai_provider: str = "mistral"
     ai_model: str = "voxtral-mini-latest"
     api_key: Optional[str] = None
+    timeout: float = 300.0
     transcription_template: str = "{original_name}-transcribe"
     error_log_file: str = "Transcription Errors.md"
     migrate_links: bool = True
@@ -64,12 +65,13 @@ class Config:
             ai_provider=get_val("ai_provider", "TRANSCRIBER_AI_PROVIDER", "mistral"),
             ai_model=get_val("ai_model", "TRANSCRIBER_AI_MODEL", "voxtral-mini-latest"),
             api_key=os.getenv("MISTRAL_API_KEY") or os.getenv("TRANSCRIBER_API_KEY") or toml_data.get("api_key"),
+            timeout=float(get_val("timeout", "TRANSCRIBER_TIMEOUT", 300.0)),
             transcription_template=get_val("transcription_template", "TRANSCRIBER_TRANSCRIPTION_TEMPLATE", "{original_name}-transcribe"),
             error_log_file=get_val("error_log_file", "TRANSCRIBER_ERROR_LOG", "Transcription Errors.md"),
             migrate_links=get_val("migrate_links", "TRANSCRIBER_MIGRATE_LINKS", True),
             commit_message_template=get_val("commit_message_template", "TRANSCRIBER_COMMIT_MSG", "chore(transcription): Add transcription for {audio_file}"),
             pr_title_template=get_val("pr_title_template", "TRANSCRIBER_PR_TITLE", "Transcription: {audio_file}")
-        )
+            )
 
     @classmethod
     def from_env(cls) -> "Config":
