@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 from transcriber.config import Config
 
@@ -24,7 +23,4 @@ class FileOrganizer:
         self.ensure_recordings_dir()
         for recording in self.discover_recordings():
             dest = self.recordings_dir / recording.name
-            if self.config.move_audio:
-                recording.rename(dest)
-            else:
-                shutil.copy2(recording, dest)
+            recording.rename(dest)

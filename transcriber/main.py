@@ -112,7 +112,6 @@ def main():
     parser.add_argument("--vault-root", type=Path, help="Path to Obsidian vault root")
     parser.add_argument("--audio-dir", type=Path, help="Directory containing audio files")
     parser.add_argument("--transcription-dir", type=Path, help="Directory for transcriptions")
-    parser.add_argument("--move-audio", action="store_true", help="Move audio files to transcription directory")
     parser.add_argument("--ai-provider", help="AI provider (default: mistral)")
     parser.add_argument("--ai-model", help="AI Model to use")
 
@@ -130,8 +129,6 @@ def main():
         val = getattr(args, attr)
         if val is not None:
             os.environ[env_var] = str(val)
-    if args.move_audio:
-        os.environ["TRANSCRIBER_MOVE_AUDIO"] = "true"
 
     config = Config.load(config_path=args.config)
     run_pipeline(config)

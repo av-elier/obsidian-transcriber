@@ -18,7 +18,6 @@ def test_config_defaults():
     assert config.vault_root == Path("/vault")
     assert config.audio_dir == Path("Recordings")
     assert config.transcription_dir == Path("Recordings")
-    assert config.move_audio is False
     assert config.transcription_template == "{original_name}-transcribe"
     assert config.migrate_links is True
     assert config.ai_provider == "mistral"
@@ -28,14 +27,12 @@ def test_config_defaults():
 def test_config_from_env(monkeypatch):
     monkeypatch.setenv("TRANSCRIBER_VAULT_ROOT", "/env/vault")
     monkeypatch.setenv("TRANSCRIBER_AUDIO_DIR", "MyAudio")
-    monkeypatch.setenv("TRANSCRIBER_MOVE_AUDIO", "true")
     monkeypatch.setenv("TRANSCRIBER_AI_PROVIDER", "openai")
 
     config = Config.from_env()
 
     assert config.vault_root == Path("/env/vault").resolve()
     assert config.audio_dir == Path("MyAudio")
-    assert config.move_audio is True
     assert config.ai_provider == "openai"
 
 
@@ -43,7 +40,6 @@ def test_config_from_toml(tmp_path):
     toml_content = """\
 vault_root = "/toml/vault"
 audio_dir = "TomlAudio"
-move_audio = true
 ai_provider = "anthropic"
 """
     config_file = tmp_path / "transcriber.toml"
@@ -53,7 +49,6 @@ ai_provider = "anthropic"
 
     assert config.vault_root == Path("/toml/vault").resolve()
     assert config.audio_dir == Path("TomlAudio")
-    assert config.move_audio is True
     assert config.ai_provider == "anthropic"
 
 

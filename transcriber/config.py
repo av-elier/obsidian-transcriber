@@ -8,7 +8,6 @@ class Config:
     vault_root: Path
     audio_dir: Path = field(default_factory=lambda: Path("Recordings"))
     transcription_dir: Path = field(default_factory=lambda: Path("Recordings"))
-    move_audio: bool = False
     ai_provider: str = "mistral"
     ai_model: str = "voxtral-mini-latest"
     api_key: Optional[str] = None
@@ -61,7 +60,6 @@ class Config:
             vault_root=vault_root,
             audio_dir=Path(get_val("audio_dir", "TRANSCRIBER_AUDIO_DIR", "Recordings")),
             transcription_dir=Path(get_val("transcription_dir", "TRANSCRIBER_TRANSCRIPTION_DIR", "Recordings")),
-            move_audio=get_val("move_audio", "TRANSCRIBER_MOVE_AUDIO", False),
             ai_provider=get_val("ai_provider", "TRANSCRIBER_AI_PROVIDER", "mistral"),
             ai_model=get_val("ai_model", "TRANSCRIBER_AI_MODEL", "voxtral-mini-latest"),
             api_key=os.getenv("MISTRAL_API_KEY") or os.getenv("TRANSCRIBER_API_KEY") or toml_data.get("api_key"),

@@ -25,10 +25,6 @@ inputs:
     description: 'AI Model to use'
     default: 'voxtral-mini-latest'
     required: false
-  move-audio:
-    description: 'Move audio files instead of copying'
-    default: 'false'
-    required: false
   auto-merge:
     description: 'Whether to auto-merge the PR after creation'
     default: 'true'
@@ -91,8 +87,7 @@ runs:
           --audio-dir "${{ inputs.audio-dir }}" \
           --transcription-dir "${{ inputs.transcription-dir }}" \
           --ai-provider "${{ inputs.ai-provider }}" \
-          --ai-model "${{ inputs.ai-model }}" \
-          ${{ inputs.move-audio == 'true' && '--move-audio' || '' }}
+          --ai-model "${{ inputs.ai-model }}"
       shell: bash
       env:
         MISTRAL_API_KEY: ${{ inputs.api-key }} # Or generic variable name in future

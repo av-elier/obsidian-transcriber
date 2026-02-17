@@ -15,14 +15,12 @@ def test_discover_m4a_files(tmp_path, config):
     assert found[0].name == "recording1.m4a"
 
 
-@pytest.mark.parametrize("move_audio,original_exists", [(True, False), (False, True)])
-def test_organize_move_vs_copy(tmp_path, config, move_audio, original_exists):
+def test_organize_moves_files(tmp_path, config):
     (tmp_path / "recording.m4a").write_text("audio")
-    config.move_audio = move_audio
     FileOrganizer(vault_root=tmp_path, config=config).organize()
 
     assert (tmp_path / "Recordings" / "recording.m4a").exists()
-    assert (tmp_path / "recording.m4a").exists() == original_exists
+    assert not (tmp_path / "recording.m4a").exists()
 
 
 def test_ensure_recordings_dir(tmp_path, config):

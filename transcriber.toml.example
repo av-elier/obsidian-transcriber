@@ -8,12 +8,7 @@ audio_dir = "Recordings"
 # Directory where transcriptions should be saved (relative to vault_root)
 transcription_dir = "Recordings"
 
-# 2. Move Behavior
-# Whether to move the original audio file to the transcription directory (true)
-# or keep it in its original location (false)
-move_audio = false
-
-# 3. Transcribe, AI, and Errors
+# 2. Transcribe, AI, and Errors
 # AI Provider to use for transcription (currently only 'mistral' is supported natively)
 ai_provider = "mistral"
 # Model identifier for the chosen provider
@@ -25,6 +20,6 @@ transcription_template = "{original_name}-transcribe"
 # Filename for logging errors within the vault
 error_log_file = "Transcription Errors.md"
 
-# 4. Link Migration
+# 3. Link Migration
 # Whether to scan the vault and update ![[audio.m4a]] links to point to transcriptions
 migrate_links = true
