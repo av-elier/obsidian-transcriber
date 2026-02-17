@@ -78,17 +78,17 @@ runs:
 
     - name: Run Transcription Pipeline
       run: |
-        uv run python -m transcriber.main \
+        uv run --project .obsidian-transcriber-tool python -m transcriber.main \
           --vault-root "${{ inputs.vault-root }}" \
           --audio-dir "${{ inputs.audio-dir }}" \
           --transcription-dir "${{ inputs.transcription-dir }}" \
           --ai-provider "${{ inputs.ai-provider }}" \
           --ai-model "${{ inputs.ai-model }}" \
           ${{ inputs.move-audio == 'true' && '--move-audio' || '' }}
-      working-directory: .obsidian-transcriber-tool
       shell: bash
       env:
         MISTRAL_API_KEY: ${{ inputs.api-key }} # Or generic variable name in future
+        PYTHONPATH: .obsidian-transcriber-tool
 
     - name: Check for changes
       id: git-check
