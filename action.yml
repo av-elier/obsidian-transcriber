@@ -53,13 +53,21 @@ runs:
         ref: main
 
     - name: Prevent tool commit & Fetch Vault History
+      id: fetch-history
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       run: |
         # Ignore the tool directory so it's not committed
         echo ".obsidian-transcriber-tool" >> .git/info/exclude
 
-        # Fetch main branch to ensure history exists for PR creation
-        git fetch origin main --depth=1 || echo "Could not fetch main, continuing..."
+        # Detect default branch
+        DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)
+        echo "Detected default branch: $DEFAULT_BRANCH"
+        echo "default_branch=$DEFAULT_BRANCH" >> $GITHUB_OUTPUT
+
+        # Fetch default branch to ensure history exists for PR creation
+        git fetch origin $DEFAULT_BRANCH --no-tags --depth=1 || echo "Could not fetch $DEFAULT_BRANCH, continuing..."
 
     - name: Install uv
       uses: astral-sh/setup-uv@v5
@@ -113,7 +121,7 @@ runs:
         # Commit changes
         git add .
         git commit -m "chore(automation): Add new transcriptions"
-        git push origin "$BRANCH_NAME"
+        git push -u origin "$BRANCH_NAME"
       id: branch-create
 
     - name: Create Pull Request
@@ -124,7 +132,7 @@ runs:
           --title "chore(automation): Add new transcriptions" \
           --body "Automated transcription of new recordings." \
           --head "${{ steps.branch-create.outputs.branch }}" \
-          --base main)
+          --base "${{ steps.fetch-history.outputs.default_branch }}")
         echo "pr_url=$pr_url" >> $GITHUB_OUTPUT
       id: pr-create
       env:
