@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Transcription Studio",
+  "version": "0.1.0",
+  "description": "Record audio or video, save locally, and edit Mistral transcripts.",
+  "permissions": ["storage", "unlimitedStorage"],
+  "host_permissions": ["https://api.mistral.ai/*"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "Open Transcription Studio" },
+  "content_security_policy": { "extension_pages": "script-src 'self'; object-src 'self'" }
+}
