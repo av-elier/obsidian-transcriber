@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Transcription Studio",
+  "version": "0.2.0",
+  "description": "Record audio or video, save locally, and transcribe on your computer without an API key.",
+  "permissions": ["storage", "unlimitedStorage"],
+  "host_permissions": ["https://api.mistral.ai/*", "https://huggingface.co/*", "https://*.huggingface.co/*", "https://*.hf.co/*"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "Open Transcription Studio" },
+  "content_security_policy": { "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; worker-src 'self'" }
+}

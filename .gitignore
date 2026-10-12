@@ -10,3 +10,7 @@ __pycache__/
 # VSCode
 .vscode
 
+# JavaScript dependencies and local verification artifacts
+node_modules/
+.browser-test/
+
