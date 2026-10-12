@@ -1,6 +1,6 @@
 # Transcription Studio & Obsidian AV Transcriber
 
-The `chrome-extension` branch adds a Chrome extension for audio-only and video-with-audio capture, local saved recordings, Mistral transcription, transcript editing, and TXT/Markdown/JSON export. Load the `chrome-extension` folder as an unpacked extension. See [extension installation, usage, and architecture](chrome-extension/README.md). Its platform-independent transcription service is designed for reuse in a future desktop app.
+The `chrome-extension` branch adds a Chrome extension for audio-only and video-with-audio capture, local saved recordings, local Whisper transcription without an API key, optional Mistral transcription, transcript editing, and TXT/Markdown/JSON export. Load the `chrome-extension` folder as an unpacked extension. The first local transcription downloads a speech model; audio stays on your computer. See [extension installation, usage, and architecture](chrome-extension/README.md). Its platform-independent transcription services are designed for reuse in a future desktop app.
 
 The original Python tool is documented below.
 

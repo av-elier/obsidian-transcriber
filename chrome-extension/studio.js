@@ -1,11 +1,15 @@
 import { recordings } from './storage.js';
 import { CaptureSession } from './recorder.js';
 import { MistralTranscriptionService, exportTranscript } from './core/transcription.js';
+import { LocalTranscriptionService } from './core/local-transcription.js';
+import { decodeAudio } from './audio.js';
 
 const $ = id => document.getElementById(id);
 const service = new MistralTranscriptionService();
+const localService = new LocalTranscriptionService({ decodeAudio, createWorker: () => new Worker(new URL('./local-worker.js', import.meta.url), { type: 'module' }) });
 let items = [], selected, capture, starting = false, stopping = false, mediaUrl, controller, timer;
 let apiKey = '', model = 'voxtral-mini-latest', pendingSave = Promise.resolve();
+let provider = 'local';
 const unsaved = new Set();
 const status = message => { $('status').textContent = message; };
 const clock = ms => `${String(Math.floor(ms / 60000)).padStart(2, '0')}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
@@ -52,13 +56,13 @@ function openRecording(item) {
   const player = document.createElement(item.mode === 'video' ? 'video' : 'audio');
   mediaUrl = URL.createObjectURL(item.media); player.src = mediaUrl; player.controls = true;
   const controls = document.createElement('div'); controls.className = 'controls';
-  const transcribe = action('Transcribe with Mistral', async () => {
+  const transcribe = action('Transcribe', async () => {
     if (controller) return;
     if (item.transcript && !confirm('Replace your edited transcript with a new transcription?')) return;
     controller = new AbortController(); transcribe.disabled = true; transcript.disabled = true; cancel.hidden = false;
-    status('Uploading audio and transcribing… Your recording is saved locally.');
+    status(provider === 'local' ? 'Starting local transcription…' : 'Uploading audio to Mistral and transcribing…');
     try {
-      const result = await service.transcribe({ audio: item.audio, apiKey, model, signal: controller.signal });
+      const result = await (provider === 'local' ? localService : service).transcribe({ audio: item.audio, apiKey, model, signal: controller.signal, onProgress: status });
       item.transcript = result.text; item.transcription = { ...result, text: undefined, transcribedAt: new Date().toISOString() };
       transcript.value = item.transcript; await persist(item); renderLibrary(); status('Transcript ready. Edits save automatically.');
     } finally { controller = null; transcribe.disabled = false; transcript.disabled = false; cancel.hidden = true; }
@@ -121,10 +125,12 @@ $('mode').addEventListener('change', () => { if ($('mode').value === 'video') $(
 $('source').addEventListener('change', () => { if ($('source').value === 'microphone') $('mode').value = 'audio'; });
 $('search').addEventListener('input', renderLibrary);
 $('settings-toggle').addEventListener('click', () => { $('settings').hidden = !$('settings').hidden; });
+$('provider').addEventListener('change', () => { $('mistral-settings').hidden = $('provider').value !== 'mistral'; });
 $('save-settings').addEventListener('click', async () => {
   try {
     apiKey = $('api-key').value.trim(); model = $('model').value.trim() || 'voxtral-mini-latest';
-    await chrome.storage.local.set({ model });
+    provider = $('provider').value;
+    await chrome.storage.local.set({ model, provider });
     if ($('remember').checked) await chrome.storage.local.set({ apiKey });
     else await chrome.storage.local.remove('apiKey');
     status('Settings saved.'); $('settings').hidden = true;
@@ -134,8 +140,10 @@ window.addEventListener('beforeunload', event => {
   if (capture || starting || controller || unsaved.size) { event.preventDefault(); event.returnValue = ''; }
 });
 try {
-  const settings = await chrome.storage.local.get(['apiKey','model']);
+  const settings = await chrome.storage.local.get(['apiKey','model','provider']);
   apiKey = settings.apiKey || ''; model = settings.model || model;
+  provider = settings.provider === 'mistral' ? 'mistral' : 'local';
+  $('provider').value = provider; $('mistral-settings').hidden = provider !== 'mistral';
   $('api-key').value = apiKey; $('model').value = model; $('remember').checked = !!apiKey;
   items = await recordings.list(); renderLibrary();
 } catch (error) { report(error); }
